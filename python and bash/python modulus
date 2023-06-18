@@ -1,0 +1,29 @@
+"""Program lists integers in a range of 'prompted number-10' 
+and prints whether they're odd or even"""
+
+
+def even_or_odd():
+    try:
+        x = int(input("Enter an integer in a range of 1-10: "))
+        if x <= 10:
+            while x <= 10:
+                if x % 2 == 1:
+                    print(f"{x} is odd")
+                elif x % 2 == 0:
+                    print(f"{x} is even")
+                x += 1
+        else:
+            print("Your number has to be in a range of 1-10!")
+            even_or_odd()
+    except:
+        print("Your number has to be an integer!")
+        even_or_odd()
+
+
+even_or_odd()
+
+
+
+
+
+

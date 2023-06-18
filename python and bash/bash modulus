@@ -1,0 +1,30 @@
+#!/bin/bash
+# This program lists integers in a range of 'prompted number-10' and prints whether they're even or odd
+
+
+even_or_odd () {
+  read -p "Enter an integer in a range of 1-10: " x
+  if [ $x -le 10 ]
+  then
+    while [ $x -le 10 ]
+    do
+      if (( $x % 2 == 0 ))
+      then
+        echo "$x is even"
+      elif (( $x % 2 == 1 ))
+      then
+        echo "$x is odd"
+      else
+	echo "You have to enter an integer!"
+        even_or_odd
+      fi
+      ((x++))
+    done
+    echo All done\!
+  else  
+    echo "You have to enter an integer which is in a range of 1-10!"
+    even_or_odd
+  fi
+}
+
+even_or_odd

@@ -1,0 +1,88 @@
+name: CI/CD AWS EC2
+
+on:
+  push:
+    branches:
+      - "main"
+
+env:                                                                             
+  IMAGE_NAME: nginx-html-app                                                         #nie używam tego w końcu
+  REGISTRY: devops
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - uses: actions/checkout@v3
+    
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}                                 
+    
+      - name: Extract metadata (tags, labels) for Docker   
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ REGISTRY }}                 #?????????
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  provision-ec2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: '${{ secrets.TF_USER_AWS_KEY }}'
+          aws-secret-access-key: '${{ secrets.TF_USER_AWS_SECRET }}'
+          aws-region: us-east-1
+
+      - name: Setup Terraform                                                       
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Apply
+        id:   apply
+        env:
+          TF_VAR_ec2_name:  "${{ github.event.inputs.ec2-name }}"                    #???????????
+        run: |
+          cd terraform
+          terraform init
+          terraform validate
+          terraform apply -auto-approve
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3 
+ 
+      - name: deploy
+        uses: bitovi/github-actions-deploy-docker-to-ec2@v0.5.0
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_default_region: us-east-1
+          dot_env: ${{ secrets.DOT_ENV }}                                       #co to jest?
+          
+      - name: Docker pull and run
+        run: |
+          docker pull 
+        

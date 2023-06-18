@@ -1,0 +1,9 @@
+x = 1
+y = int(input("Enter your number: "))
+silnia = 1
+
+while x <= y:
+    silnia = silnia * x
+    x += 1
+
+print(f"Factorial of {y} equals {silnia}")
